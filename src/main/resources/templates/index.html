@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Manager</title>
+</head>
+<body>
+<h1>Word Manager</h1>
+
+<div>
+    <label for="messageInput">Enter your word: </label>
+    <input type="text" id="messageInput" placeholder="Type a word">
+    <button onclick="addWord()">Add Word</button>
+    <button onclick="refreshWords()">Refresh</button>
+</div>
+
+<div>
+    <h2>Words in Database:</h2>
+    <ul id="wordList">
+        <li th:each="word : ${words}" th:text="${word.word}"></li>
+    </ul>
+</div>
+
+<script>
+    let socket = new WebSocket("ws://localhost:8080/webs");
+
+    socket.onopen = function() {
+        console.log("WebSocket connection established");
+    };
+
+    socket.onmessage = function(event) {
+        console.log("Received message from server:", event.data);
+        location.reload();
+    };
+
+    socket.onclose = function(event) {
+        console.log("WebSocket connection closed:", event);
+    };
+
+    socket.onerror = function(error) {
+        console.log("WebSocket error:", error);
+    };
+
+    function addWord() {
+        const word = document.getElementById("messageInput").value;
+        if (word) {
+            socket.send(word);
+            document.getElementById("messageInput").value = "";
+        } else {
+            alert("Please enter a word before submitting.");
+        }
+    }
+
+    function refreshWords() {
+        socket.send("REFRESH");
+    }
+</script>
+</body>
+</html>
